@@ -1,0 +1,61 @@
+from collections import deque
+
+def is_valid_state(m_left, c_left, m_right, c_right):
+    if m_left < 0 or c_left < 0 or m_right < 0 or c_right < 0:
+        return False
+    if (m_left > 0 and m_left < c_left) or (m_right > 0 and m_right < c_right):
+        return False
+    return True
+
+def get_successors(state):
+    m_left, c_left, boat = state
+    m_right = 3 - m_left
+    c_right = 3 - c_left
+    moves = []
+
+    directions = -1 if boat == 'L' else 1  # Moving to the other side
+    next_boat = 'R' if boat == 'L' else 'L'
+
+    for m in range(3):  # 0, 1, 2
+        for c in range(3):  # 0, 1, 2
+            if 1 <= m + c <= 2:  # boat can carry 1 or 2 people
+                new_m_left = m_left + directions * m
+                new_c_left = c_left + directions * c
+                new_m_right = 3 - new_m_left
+                new_c_right = 3 - new_c_left
+
+                if is_valid_state(new_m_left, new_c_left, new_m_right, new_c_right):
+                    moves.append((new_m_left, new_c_left, next_boat))
+    return moves
+
+def bfs():
+    start = (3, 3, 'L')
+    goal = (0, 0, 'R')
+    queue = deque()
+    queue.append((start, [start]))
+    visited = set()
+
+    while queue:
+        current_state, path = queue.popleft()
+
+        if current_state in visited:
+            continue
+        visited.add(current_state)
+
+        if current_state == goal:
+            return path
+
+        for successor in get_successors(current_state):
+            if successor not in visited:
+                queue.append((successor, path + [successor]))
+    return None
+
+# Run the BFS
+solution = bfs()
+if solution:
+    print("✅ Solution found!\n")
+    for step in solution:
+        m, c, b = step
+        print(f"Missionaries Left: {m}, Cannibals Left: {c}, Boat: {b}")
+else:
+    print("❌ No solution found.")
